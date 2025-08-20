@@ -1,322 +1,223 @@
---[[ 
-  BLOX FRUITS SERVER NOTIFIER — Xesteer Community - Crypton
-  ✅ Compat executores + anti-spam + detecção prática por eventos/nomes
-  ⚠️ Rode DENTRO do jogo (executor). Não funciona em Studio.
+--[[
+  BLOX FRUITS NOTIFIER (VERSÃO COM WEBHOOKS INDIVIDUAIS)
+  - Cada evento possui seu próprio webhook para configuração máxima.
+  - Detecções: Mirage, Kitsune, Prehistoric, Full/Near Moon, Rare Boss, Dealers, Fruits.
+  - Cor do Embed: #4e0000 (fixa)
+  - Script real e funcional para executores.
 ]]--
 
--------------------- CONFIG --------------------
--------------------- CONFIG --------------------
-local Webhooks = {
-    FullMoon = "https://discord.com/api/webhooks/1407700239045099540/8gEglTjK5b2KePmrtCTiapNl8r19pekDFDrnuplAw1GrE9zS_pRVKFYRZV-QykX3pVbZ",
-    NearFullMoon = "https://discord.com/api/webhooks/1407700622316408872/YKDTHXD_Hx10ABACHWZrI7vQwaPVHzfl6zzdNkYJEHFzr6cNoYhTbI2qxU-tuk943eQ8",
-    FruitSpawned = "https://discord.com/api/webhooks/1407700809084305408/w35VXujuPp80AIhAd4lYmAt9jhRMIizmvgcGDYS0O7AyT6NmhTY9jwcYay0pWZ4tm7aT",
-    LegendHaki = "https://discord.com/api/webhooks/1407700947945259078/cJqI0tG82tXiYUn2jowpH5MhbwmbPnr0PocoYYV6Z3N8gr1CDk6cY4sRXYSzSq_Fjik9",
-    LegendSword = "https://discord.com/api/webhooks/1407701082930675812/tglxqyGteLn18BBqMrFkLH5jfxU2GGsitQfWWzvncLgNf0Vnpa5_7AFaV-sBWTDOEZhD",
-    RareBoss = "https://discord.com/api/webhooks/1407701191483195416/KdqDN0ZytLCIGm2HXqgZygm9tc3gfTJSXahoGdCJYEL7FoBD5Npv2EOLoLVOn-jODQKm",
-    KitsuneIsland = "https://discord.com/api/webhooks/1407701317652185110/sEBbyWCmxqlpTHrKSszL_5oI2SwTY3Clra2gBbK3OlgNyuw3wbKZ6ISrV7m_GxWU11xL",
-    PrehistoricIsland = "https://discord.com/api/webhooks/1407701730556248116/IgZR5hYZwLtOBCQdIWkGSl4U_r1sycp7CfdJWOY3PaDCRypxqMkS7WBFcAn7Be3rCb1r"
-}
+-- ============================ CONFIGURAÇÃO ESSENCIAL ============================
+-- É A ÚNICA PARTE QUE VOCÊ PRECISA EDITAR.
+local CONFIG = {
+  -- Cole aqui os seus webhooks do Discord PARA CADA EVENTO.
+  Webhooks = {
+    -- Ilhas
+    KitsuneIsland     = "https://discord.com/api/webhooks/1407701317652185110/sEBbyWCmxqlpTHrKSszL_5oI2SwTY3Clra2gBbK3OlgNyuw3wbKZ6ISrV7m_GxWU11xL",
+    MirageIsland      = "COLOQUE_SEU_WEBHOOK_DA_MIRAGE_ISLAND_AQUI",
+    PrehistoricIsland = "https://discord.com/api/webhooks/1407701730556248116/IgZR5hYZwLtOBCQdIWkGSl4U_r1sycp7CfdJWOY3PaDCRypxqMkS7WBFcAn7Be3rCb1r",
 
--- Quanto tempo (segundos) esperar antes de notificar o MESMO item novamente
-local COOLDOWN = {
-  Fruit = 60,           -- mesma fruta
-  Boss  = 120,          -- mesmo boss
-  Dealer = 300,         -- sword/haki dealer
-  Island = 300,         -- kitsune/prehistoric
-  Moon = 900            -- full/near full
-}
+    -- Fases da Lua
+    FullMoon          = "https://discord.com/api/webhooks/1407700239045099540/8gEglTjK5b2KePmrtCTiapNl8r19pekDFDrnuplAw1GrE9zS_pRVKFYRZV-QykX3pVbZ",
+    NearFullMoon      = "https://discord.com/api/webhooks/1407700622316408872/YKDTHXD_Hx10ABACHWZrI7vQwaPVHzfl6zzdNkYJEHFzr6cNoYhTbI2qxU-tuk943eQ8",
 
--- Bosses que queremos notificar (edite à vontade)
-local RARE_BOSSES = {
-  ["Don Swan"] = true,
-  ["Cursed Captain"] = true,
-  ["Beautiful Pirate"] = true,
-  ["rip_indra"] = true,
-  ["Cake Queen"] = true,
-  ["Soul Reaper"] = true
-}
+    -- Bosses
+    RareBoss          = "https://discord.com/api/webhooks/1407701191483195416/KdqDN0ZytLCIGm2HXqgZygm9tc3gfTJSXahoGdCJYEL7FoBD5Npv2EOLoLVOn-jODQKm",
 
------------------ DEPENDÊNCIAS ----------------
-local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
-local Workspace = game:GetService("Workspace")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    -- Vendedores Lendários
+    LegendSword       = "https://discord.com/api/webhooks/1407701082930675812/tglxqyGteLn18BBqMrFkLH5jfxU2GGsitQfWWzvncLgNf0Vnpa5_7AFaV-sBWTDOEZhD",
+    LegendHaki        = "https://discord.com/api/webhooks/1407700947945259078/cJqI0tG82tXiYUn2jowpH5MhbwmbPnr0PocoYYV6Z3N8gr1CDk6cY4sRXYSzSq_Fjik9",
+    
+    -- Frutas
+    FruitSpawned      = "https://discord.com/api/webhooks/1407700809084305408/w35VXujuPp80AIhAd4lYmAt9jhRMIizmvgcGDYS0O7AyT6NmhTY9jwcYay0pWZ4tm7aT"
+  },
+
+  -- Ative ou desative os notificadores que desejar (opcional).
+  Enabled = {
+    MirageIsland      = true,
+    KitsuneIsland     = true,
+    PrehistoricIsland = true,
+    FullMoon          = true,
+    NearFullMoon      = true,
+    RareBoss          = true,
+    LegendHaki        = true,
+    LegendSword       = true,
+    Fruit             = true
+  },
+
+  -- Cooldowns (em segundos) para não spammar o mesmo evento.
+  Cooldowns = {
+    Island = 300, -- 5 minutos
+    Moon   = 900, -- 15 minutos
+    Boss   = 120, -- 2 minutos
+    Dealer = 300, -- 5 minutos
+    Fruit  = 60   -- 1 minuto
+  },
+
+  -- Lista de bosses raros que serão monitorados.
+  RareBosses = {
+    ["Don Swan"] = true, ["Cursed Captain"] = true, ["Beautiful Pirate"] = true,
+    ["rip_indra"] = true, ["Cake Queen"] = true, ["Soul Reaper"] = true
+  }
+}
+-- ========================== FIM DA CONFIGURAÇÃO ===========================
+
+
+-- ========================== NÚCLEO DO SCRIPT (NÃO EDITAR) ==========================
+local Notifier = { _connections = {}, _sentCache = {} }
+local Players, Workspace, ReplicatedStorage, HttpService, Lighting =
+  game:GetService("Players"), game:GetService("Workspace"), game:GetService("ReplicatedStorage"),
+  game:GetService("HttpService"), game:GetService("Lighting")
 
 local LP = Players.LocalPlayer
-
--- Compat: função HTTP do executor
 local httpRequest = (syn and syn.request) or request or http_request or (http and http.request)
-assert(httpRequest, "Seu executor não fornece request/http_request. Use um com suporte HTTP.")
+assert(httpRequest, "[Notifier] Erro fatal: Seu executor não possui uma função de request HTTP. O script não pode funcionar.")
 
------------------ FUNÇÕES BASE ----------------
-local function serverInfo()
-  local count = #Players:GetPlayers()
-  local link = ("https://www.roblox.com/games/2753915549/Blox-Fruits?server=%s"):format(game.JobId)
-  return count, link
-end
-
-local function sendEmbed(webhook, notifyName, fields)
-  if not webhook or webhook == "" then return end
-  local data = {
-    embeds = {{
-      title = notifyName .. " Notify",
-      fields = fields,
-      footer = { text = "Xesteer Community - Crypton" }
-    }}
-  }
-  local ok, body = pcall(HttpService.JSONEncode, HttpService, data)
-  if not ok then return end
-
-  httpRequest({
-    Url = webhook,
-    Method = "POST",
-    Headers = { ["Content-Type"] = "application/json" },
-    Body = body
-  })
-end
-
--- Anti-spam cache
-local sentCache = {} -- key -> lastTime
-local function canSend(key, ttl)
+function Notifier:CanSend(key, ttl)
   local now = os.time()
-  local last = sentCache[key]
-  if not last or (now - last) >= ttl then
-    sentCache[key] = now
+  if not self._sentCache[key] or (now - self._sentCache[key]) >= ttl then
+    self._sentCache[key] = now
     return true
   end
   return false
 end
 
--- Facilidade pra montar fields padrão
-local function baseFields(extraName, extraValue)
-  local players, link = serverInfo()
-  local fields = {}
-  if extraName and extraValue then
-    table.insert(fields, { name = extraName, value = extraValue, inline = true })
-  end
-  table.insert(fields, { name = "Players Count", value = ("%d/12"):format(players), inline = true })
-  table.insert(fields, { name = "Link server", value = link })
-  return fields
+function Notifier:GetServerInfo()
+  local playerCount = #Players:GetPlayers()
+  local serverLink = ("roblox://games/launch?placeId=2753915549&gameId=%s"):format(game.JobId)
+  return ("%d/12"):format(playerCount), serverLink
 end
 
------------------- AUTOTESTE -------------------
--- Envia um embed de teste (ajuda a validar os webhooks)
-task.delay(2, function()
-  local fields = baseFields("Self-Test", "```Notificador iniciado com sucesso```")
-  for name, hook in pairs(Webhooks) do
-    sendEmbed(hook, "Boot (" .. name .. ")", fields)
-    task.wait(0.3)
-  end
-end)
+function Notifier:SendEmbed(webhookKey, title, fields)
+  local webhookUrl = CONFIG.Webhooks[webhookKey]
+  if not webhookUrl or webhookUrl == "" or webhookUrl:find("COLOQUE_SEU_WEBHOOK") then return end
 
------------------- DETECTORES ------------------
+  local playerCount, serverLink = self:GetServerInfo()
+  
+  local finalFields = {}
+  for _, field in ipairs(fields) do table.insert(finalFields, field) end
+  table.insert(finalFields, { name = "Players no Servidor", value = "```" .. playerCount .. "```", inline = true })
+  table.insert(finalFields, { name = "🔗 Link do Servidor", value = "[Clique aqui para entrar](" .. serverLink .. ")" })
 
--- 1) FRUITS NO CHÃO (Tools com "Fruit" no nome)
-local function isFruitTool(inst)
-  if not inst then return false end
-  if not inst:IsA("Tool") then return false end
-  local n = tostring(inst.Name):lower()
-  return n:find("fruit") ~= nil
-end
-
-local function notifyFruit(tool)
-  local key = "fruit:" .. tool:GetDebugId(0)
-  if not canSend(key, COOLDOWN.Fruit) then return end
-  local fname = "```" .. tool.Name .. "```"
-  local fields = baseFields("Fruit Spawned", fname)
-  sendEmbed(Webhooks.FruitSpawned, "Fruit Spawned", fields)
-end
-
--- Escaneia existentes e conecta ChildAdded
-task.spawn(function()
-  -- varredura inicial
-  for _, inst in ipairs(Workspace:GetDescendants()) do
-    if isFruitTool(inst) then notifyFruit(inst) end
-  end
-  -- notifica quando surgirem novas
-  Workspace.DescendantAdded:Connect(function(inst)
-    if isFruitTool(inst) then
-      -- aguarda nome carregar por segurança
-      task.delay(0.2, function()
-        if inst and inst.Parent then notifyFruit(inst) end
-      end)
-    end
+  local payload = {
+    embeds = {{
+      title = title,
+      fields = finalFields,
+      color = 5111808, -- Cor fixa #4e0000
+      timestamp = os.date("!%Y-%m-%dT%H:%M:%S.000Z"),
+      footer = { text = "Blox Fruits Notifier" }
+    }}
+  }
+  
+  pcall(function()
+    local body = HttpService:JSONEncode(payload)
+    httpRequest({ Url = webhookUrl, Method = "POST", Headers = { ["Content-Type"] = "application/json" }, Body = body })
   end)
-end)
+end
 
--- 2) RARE BOSSES (Workspace.Enemies)
-local Enemies
-task.spawn(function()
-  Enemies = Workspace:FindFirstChild("Enemies")
-  if not Enemies then
-    -- alguns servidores criam depois
-    Workspace.ChildAdded:Connect(function(c)
-      if c.Name == "Enemies" then Enemies = c end
-    end)
+function Notifier:InitIslandDetector()
+  if not (CONFIG.Enabled.MirageIsland or CONFIG.Enabled.KitsuneIsland or CONFIG.Enabled.PrehistoricIsland) then return end
+
+  local function checkIsland(instance)
+    if not (instance and instance:IsA("Model")) then return end
+    local name = instance.Name:lower()
+    
+    if CONFIG.Enabled.KitsuneIsland and name:find("kitsune") and self:CanSend("island:kitsune", CONFIG.Cooldowns.Island) then
+      print("[Notifier] Ilha Detectada: Kitsune Island")
+      self:SendEmbed("KitsuneIsland", "🏝️ Kitsune Island Spawned!", {{ name = "Status", value = "A ilha apareceu no servidor!", inline = true }})
+    elseif CONFIG.Enabled.MirageIsland and name:find("mirage") and self:CanSend("island:mirage", CONFIG.Cooldowns.Island) then
+      print("[Notifier] Ilha Detectada: Mirage Island")
+      self:SendEmbed("MirageIsland", "🏝️ Mirage Island Spawned!", {{ name = "Status", value = "A ilha apareceu no servidor!", inline = true }})
+    elseif CONFIG.Enabled.PrehistoricIsland and name:find("prehistoric") and self:CanSend("island:prehistoric", CONFIG.Cooldowns.Island) then
+      print("[Notifier] Ilha Detectada: Prehistoric Island")
+      self:SendEmbed("PrehistoricIsland", "🏝️ Prehistoric Island Spawned!", {{ name = "Status", value = "A ilha (Mar 6) apareceu no servidor!", inline = true }})
+    end
   end
-  -- Varredura inicial + listeners
+
+  for _, child in ipairs(Workspace:GetChildren()) do checkIsland(child) end
+  table.insert(self._connections, Workspace.ChildAdded:Connect(checkIsland))
+end
+
+function Notifier:InitMoonDetector()
+  if not (CONFIG.Enabled.FullMoon or CONFIG.Enabled.NearFullMoon) then return end
+
+  local dayCycle = Lighting:WaitForChild("DayCycle")
+
+  local function checkMoonPhase()
+    local moonPhase = dayCycle.MoonPhase.Value
+
+    if CONFIG.Enabled.FullMoon and moonPhase == 7 and self:CanSend("moon:full", CONFIG.Cooldowns.Moon) then
+      print("[Notifier] Full Moon Detectada!")
+      self:SendEmbed("FullMoon", "🌕 Full Moon!", {{ name = "Status", value = "A Lua Cheia está ativa!", inline = true }})
+    elseif CONFIG.Enabled.NearFullMoon and moonPhase == 6 and self:CanSend("moon:near", CONFIG.Cooldowns.Moon) then
+      print("[Notifier] Near Full Moon Detectada!")
+      self:SendEmbed("NearFullMoon", "🌖 Near Full Moon!", {{ name = "Status", value = "A noite está quase em Lua Cheia!", inline = true }})
+    end
+  end
+  
+  checkMoonPhase()
+  table.insert(self._connections, dayCycle.MoonPhase.Changed:Connect(checkMoonPhase))
+end
+
+function Notifier:InitBossDetector()
+  if not CONFIG.Enabled.RareBoss then return end
+
   local function checkBoss(model)
-    if model:IsA("Model") and model:FindFirstChildOfClass("Humanoid") then
-      if RARE_BOSSES[model.Name] then
-        local key = "boss:" .. model.Name
-        if canSend(key, COOLDOWN.Boss) then
-          local fields = baseFields("Rare Boss", "```" .. model.Name .. "```")
-          sendEmbed(Webhooks.RareBoss, "Rare Boss", fields)
-        end
-      end
+    if not (model and model:IsA("Model") and model:FindFirstChildOfClass("Humanoid")) then return end
+    if CONFIG.RareBosses[model.Name] and self:CanSend("boss:" .. model.Name, CONFIG.Cooldowns.Boss) then
+      print("[Notifier] Boss Raro Detectado:", model.Name)
+      self:SendEmbed("RareBoss", "🔥 Rare Boss Spawned!", {{ name = "Boss", value = "```" .. model.Name .. "```", inline = true }})
     end
   end
-
-  -- inicial (se já existir Enemies)
-  task.delay(1, function()
-    if Enemies then
-      for _, m in ipairs(Enemies:GetChildren()) do
-        checkBoss(m)
-      end
-      Enemies.ChildAdded:Connect(checkBoss)
-    end
-  end)
-
-  -- fallback: se Enemies não existir, monitora Workspace inteiro (mais pesado)
-  Workspace.ChildAdded:Connect(function(c)
-    if c:IsA("Model") and c:FindFirstChildOfClass("Humanoid") then
-      if RARE_BOSSES[c.Name] then
-        local key = "boss:" .. c.Name
-        if canSend(key, COOLDOWN.Boss) then
-          local fields = baseFields("Rare Boss", "```" .. c.Name .. "```")
-          sendEmbed(Webhooks.RareBoss, "Rare Boss", fields)
-        end
-      end
-    end
-  end)
-end)
-
--- 3) LEGENDARY SWORD DEALER (padrões por nome)
-local function isLegendSwordInstance(inst)
-  local n = tostring(inst.Name):lower()
-  return n:find("legend") and n:find("sword") and n:find("dealer")  -- "Legendary Sword Dealer"
+  
+  for _, child in ipairs(Workspace.Enemies:GetChildren()) do checkBoss(child) end
+  table.insert(self._connections, Workspace.Enemies.ChildAdded:Connect(checkBoss))
 end
 
-local function watchLegendSword(inst)
-  if isLegendSwordInstance(inst) or (inst:IsA("Model") and isLegendSwordInstance(inst)) then
-    local key = "dealer:sword"
-    if canSend(key, COOLDOWN.Dealer) then
-      local fields = baseFields("Legendary Sword Dealer", "⚔️ Dealer is Available!")
-      sendEmbed(Webhooks.LegendSword, "Legend Sword", fields)
+function Notifier:InitLegendaryDealerDetector()
+  if not (CONFIG.Enabled.LegendHaki or CONFIG.Enabled.LegendSword) then return end
+
+  local function checkDealer(instance)
+    if not (instance and instance.Parent) then return end
+    local name = instance.Name:lower()
+    
+    if CONFIG.Enabled.LegendSword and name:find("legend") and name:find("sword") and name:find("dealer") and self:CanSend("dealer:sword", CONFIG.Cooldowns.Dealer) then
+      print("[Notifier] Legendary Sword Dealer Detectado!")
+      self:SendEmbed("LegendSword", "⚔️ Legendary Sword Dealer", {{ name = "Status", value = "O vendedor apareceu! (Second Sea)", inline = true }})
+    elseif CONFIG.Enabled.LegendHaki and (name:find("master of auras") or (name:find("legend") and name:find("haki"))) and self:CanSend("dealer:haki", CONFIG.Cooldowns.Dealer) then
+      print("[Notifier] Legendary Haki Dealer Detectado!")
+      self:SendEmbed("LegendHaki", "💥 Legendary Haki Dealer", {{ name = "Status", value = "O vendedor apareceu! (Second/Third Sea)", inline = true }})
     end
   end
+
+  for _, item in ipairs(Workspace:GetDescendants()) do checkDealer(item) end
+  table.insert(self._connections, Workspace.DescendantAdded:Connect(checkDealer))
 end
 
--- 4) LEGENDARY HAKI (Master of Auras / Haki keywords)
-local function isLegendHakiInstance(inst)
-  local n = tostring(inst.Name):lower()
-  return n:find("master of auras") or (n:find("legend") and n:find("haki")) or n:find("aura")
+function Notifier:InitFruitDetector()
+  if not CONFIG.Enabled.Fruit then return end
+  
+  local function checkFruit(tool)
+    if not (tool and tool:IsA("Tool") and tool.Name:lower():find("fruit")) then return end
+    if not tool.Parent or not tool.Parent:IsA("Workspace") then return end
+    
+    if self:CanSend("fruit:" .. tool.Name, CONFIG.Cooldowns.Fruit) then
+      print("[Notifier] Fruta Detectada:", tool.Name)
+      self:SendEmbed("FruitSpawned", "🍉 Fruit Spawned!", {{ name = "Fruta", value = "```" .. tool.Name .. "```", inline = true }})
+    end
+  end
+
+  for _, item in ipairs(Workspace:GetDescendants()) do checkFruit(item) end
+  table.insert(self._connections, Workspace.DescendantAdded:Connect(checkFruit))
 end
 
-local function watchLegendHaki(inst)
-  if isLegendHakiInstance(inst) then
-    local key = "dealer:haki"
-    if canSend(key, COOLDOWN.Dealer) then
-      local fields = baseFields("Legendary Haki Dealer", "💥 Dealer is Available!")
-      sendEmbed(Webhooks.LegendHaki, "Legend Haki", fields)
-    end
-  end
+function Notifier:Start()
+  print("[Notifier] Iniciando script com webhooks individuais...")
+  self:InitIslandDetector()
+  self:InitMoonDetector()
+  self:InitBossDetector()
+  self:InitLegendaryDealerDetector()
+  self:InitFruitDetector()
+  print("[Notifier] Todos os módulos foram carregados. Monitorando o servidor.")
 end
 
--- Varre Workspace e ReplicatedStorage por segurança + listeners
-task.spawn(function()
-  local function sweep()
-    for _, d in ipairs(Workspace:GetDescendants()) do
-      watchLegendSword(d)
-      watchLegendHaki(d)
-    end
-    for _, d in ipairs(ReplicatedStorage:GetDescendants()) do
-      watchLegendSword(d)
-      watchLegendHaki(d)
-    end
-  end
-  sweep()
-  Workspace.DescendantAdded:Connect(function(i)
-    watchLegendSword(i)
-    watchLegendHaki(i)
-  end)
-  ReplicatedStorage.DescendantAdded:Connect(function(i)
-    watchLegendSword(i)
-    watchLegendHaki(i)
-  end)
-end)
-
--- 5) ILHAS ESPECIAIS (Kitsune / Prehistoric) — por nome
-local function checkIslandByName(namePart, hook, title)
-  local nameLower = namePart:lower()
-  local function sweep()
-    for _, c in ipairs(Workspace:GetChildren()) do
-      local n = c.Name:lower()
-      if n:find(nameLower) then
-        local key = "island:" .. nameLower
-        if canSend(key, COOLDOWN.Island) then
-          local fields = baseFields(title, "```" .. c.Name .. "```")
-          sendEmbed(hook, title, fields)
-        end
-      end
-    end
-  end
-  -- inicial + listeners
-  sweep()
-  Workspace.ChildAdded:Connect(function(c)
-    if tostring(c.Name):lower():find(nameLower) then
-      local key = "island:" .. nameLower
-      if canSend(key, COOLDOWN.Island) then
-        local fields = baseFields(title, "```" .. c.Name .. "```")
-        sendEmbed(hook, title, fields)
-      end
-    end
-  end)
-  -- periódica (garante caso crie com delay profundo)
-  task.spawn(function()
-    while task.wait(60) do
-      sweep()
-    end
-  end)
-end
-
-checkIslandByName("Kitsune", Webhooks.KitsuneIsland, "Kitsune Island")
-checkIslandByName("Prehistoric", Webhooks.PrehistoricIsland, "Prehistoric Island")
-
--- 6) FULL MOON / NEAR FULL MOON
--- Muitos servidores mostram textos/labels na tela quando a lua está cheia ou quase cheia.
--- Vamos vigiar o PlayerGui e procurar labels com esse texto.
-local function watchMoonInGui(pg)
-  local function scan(obj)
-    if obj:IsA("TextLabel") or obj:IsA("TextButton") then
-      local t = (obj.Text or ""):lower()
-      if t:find("full moon") then
-        local key = "moon:full"
-        if canSend(key, COOLDOWN.Moon) then
-          local fields = baseFields("Status", "🌕 **Full Moon Active!**")
-          sendEmbed(Webhooks.FullMoon, "Full Moon", fields)
-        end
-      elseif t:find("near full moon") or t:find("almost full moon") or t:find("peaks through the clouds") then
-        local key = "moon:near"
-        if canSend(key, COOLDOWN.Moon) then
-          local fields = baseFields("Status", "🌖 **Near Full Moon!**")
-          sendEmbed(Webhooks.NearFullMoon, "Near Full Moon", fields)
-        end
-      end
-    end
-  end
-
-  -- escaneia tudo que já existe
-  for _, d in ipairs(pg:GetDescendants()) do
-    scan(d)
-  end
-  -- escuta novas labels
-  pg.DescendantAdded:Connect(scan)
-end
-
-task.spawn(function()
-  local pg = LP:FindFirstChildOfClass("PlayerGui") or LP:WaitForChild("PlayerGui")
-  watchMoonInGui(pg)
-end)
-
--- FIM
+Notifier:Start()
