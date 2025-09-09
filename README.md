@@ -1,38 +1,38 @@
--- Notify Script Update 27 - Instantâneo
+-- Notify Script - Xesteer Hub
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
--- ---------- CONFIGURAÇÕES ----------
-local SERVER_ICON = "https://cdn.discordapp.com/attachments/1407790618125668559/1414907782422855691/PNG_03.png"
+-- Cor fixa (hex #4e0000 = decimal 5111808)
+local EMBED_COLOR = 5111808
 
+-- Webhooks já configurados
 local WEBHOOKS = {
-    FullMoon = "https://discord.com/api/webhooks/1407700239045099540/8gEglTjK5b2KePmrtCTiapNl8r19pekDFDrnuplAw1GrE9zS_pRVKFYRZV-QykX3pVbZ",
-    NearFullMoon = "https://discord.com/api/webhooks/1407700622316408872/YKDTHXD_Hx10ABACHWZrI7vQwaPVHzfl6zzdNkYJEHFzr6cNoYhTbI2qxU-tuk943eQ8",
-    MirageIsland = "https://discord.com/api/webhooks/1413078808478613565/7Q2-Lo626ESJZyFukt75xLZJeVoZuGPUG4GIpatq62EqFpNQYARCUU0eo5QmI6Ott3v5",
-    KitsuneIsland = "https://discord.com/api/webhooks/1407701317652185110/sEBbyWCmxqlpTHrKSszL_5oI2SwTY3Clra2gBbK3OlgNyuw3wbKZ6ISrV7m_GxWU11xL",
-    PrehistoricIsland = "https://discord.com/api/webhooks/1407701730556248116/IgZR5hYZwLtOBCQdIWkGSl4U_r1sycp7CfdJWOY3PaDCRypxqMkS7WBFcAn7Be3rCb1r",
-    Fruit = "https://discord.com/api/webhooks/1407700809084305408/w35VXujuPp80AIhAd4lYmAt9jhRMIizmvgcGDYS0O7AyT6NmhTY9jwcYay0pWZ4tm7aT",
-    LegendHaki = "https://discord.com/api/webhooks/1407700947945259078/cJqI0tG82tXiYUn2jowpH5MhbwmbPnr0PocoYYV6Z3N8gr1CDk6cY4sRXYSzSq_Fjik9",
-    LegendSword = "https://discord.com/api/webhooks/1407701082930675812/tglxqyGteLn18BBqMrFkLH5jfxU2GGsitQfWWzvncLgNf0Vnpa5_7AFaV-sBWTDOEZhD",
-    RareBoss = "https://discord.com/api/webhooks/1407701191483195416/KdqDN0ZytLCIGm2HXqgZygm9tc3gfTJSXahoGdCJYEL7FoBD5Npv2EOLoLVOn-jODQKm"
+    FullMoon = "https://discord.com/api/webhooks/1255213642795810957/oycEkJx4F68sgQtSpt-xFPG0JmA8V_g_NueY9eQdQ6LQ3N2vhK00Nln7x4W9H1z2e-Dn",
+    NearFullMoon = "https://discord.com/api/webhooks/1255213790905589820/v7tO6pUBuvROi6eM5lRnkV5p_Yl3nObHXms1NGKjx-xSssg60hhTPzXFlf9w9m3NGp3G",
+    MirageIsland = "https://discord.com/api/webhooks/1255213851578224700/oayOWv7guA6pQ8j8do0nqdmS5r9oIklANBlbkx94tiO8sGMi9F-6Z0ltdGVJCe1SL7Ko",
+    KitsuneIsland = "https://discord.com/api/webhooks/1255213903376498728/I46b1JJKNPHNGUu2MY17o2yJwEo9A_lw7cGZAT5yqMmwbdkbZRHQNgpToKeYrDgqLm14",
+    PrehistoricIsland = "https://discord.com/api/webhooks/1255213947688558652/dK6Cbo7onAuLEzM4VgNOoGjqk_KY52wQvOE6PPTay4U5P-KS7IZiFJziJw4AlCPhSEwf",
+    Fruit = "https://discord.com/api/webhooks/1255213991898105918/gCkbCnyVx_ZtpoIWtGkEmoYxvtR6xHiPZr1MR3JSfRexqq2OQ1bRQ0Kv11uuxpfRYc4X",
+    LegendHaki = "https://discord.com/api/webhooks/1255214041033936956/sHd1x-Rj22TbkMhtW4x3qqmb7bcQheZcY08m3aVY0o1N6RFLpNsZ_JN6FKnIkLgQ8ejQ",
+    LegendSword = "https://discord.com/api/webhooks/1255214088047290449/8rhlRGWmylNE4TQ-P5t0YAk8ufc-dxssldVVBgM5lf9gDUpZTJepD7M1XY9JrvxE-hFl",
+    RareBoss = "https://discord.com/api/webhooks/1255214138137593916/o9qfQzx5B_nyBv98ZTyB-Pze7KhA5oqZPHOj_L9jP3rvhTL0zHzkQTVsLs1VjFsX4o0m"
 }
 
+-- Listas
 local FRUITS_NAMES = {
     "Rocket","Spin","Chop","Spring","Bomb","Smoke","Spike","Flame","Eagle","Ice","Sand",
     "Dark","Diamond","Light","Rubber","Barrier","Magma","Quake","Buddha","Love","Spider",
     "Phoenix","Portal","Rumble","Pain","Blizzard","Gravity","Mammoth","Venom","Shadow",
     "Control","Spirit","Dough","T-Rex","Leopard","Sound","Kitsune","Dragon","Lightning"
 }
-
 local LEGEND_SWORDS = {"Oroshi","Saishi","Shizu"}
 local RARE_BOSSES = {
     "Rip Indra","Dough King","Cake Prince","Tyrant of the Skies",
     "Darkbeard","Soul Reaper","Cursed Captain"
 }
-
 local SEA_BY_PLACEID = {
     [2753915549] = "First Sea",
     [4442272183] = "Second Sea",
@@ -43,83 +43,89 @@ local DEFAULT_SEA = SEA_BY_PLACEID[game.PlaceId] or "Unknown"
 -- Cache anti-spam
 local sentCache = {}
 
--- ---------- FUNÇÕES ----------
-local function nowISO() return os.date("%d/%m/%Y - %H:%M:%S") end
-local function playersCount() return #Players:GetPlayers() end
-local function getJobId() return tostring(game.JobId or "unknown-job") end
-local function makeJoinScript()
-    return string.format("```lua\ngame:GetService('TeleportService'):TeleportToPlaceInstance(%d,'%s',game.Players.LocalPlayer)\n```", game.PlaceId, getJobId())
+-- Funções utilitárias
+local function getPlayersCount() return tostring(#Players:GetPlayers()) end
+local function getJobId() return tostring(game.JobId) end
+local function makeJoinScript(jobId)
+    return string.format('game:GetService("TeleportService"):TeleportToPlaceInstance(%d,"%s")', game.PlaceId, jobId)
 end
 
-local function sendEmbed(title,key,webhookUrl)
-    if not webhookUrl or webhookUrl=="" then return end
-    local embed = {
-        title = title,
-        color = 0x5865F2,
-        fields = {
-            {name="Tipo :", value="`"..key.."`", inline=false},
-            {name="Jogadores no Servidor :", value=tostring(playersCount()), inline=false},
-            {name="Sea :", value=DEFAULT_SEA, inline=false},
-            {name="Job ID (Copiar PC):", value="`"..getJobId().."`", inline=false},
-            {name="Script de Entrada (Copiar PC):", value=makeJoinScript(), inline=false},
-            {name="Job ID (Copiar Mobile):", value="`"..getJobId().."`", inline=false},
-            {name="Script de Entrada (Copiar Mobile):", value=makeJoinScript(), inline=false}
+-- Monta embed igual ao da imagem
+local function buildEmbed(eventType)
+    local jobId = getJobId()
+    local joinScript = makeJoinScript(jobId)
+    local now = os.date("!%d/%m/%Y - %H:%M:%S")
+
+    return {
+        ["title"] = eventType .. " - Xesteer Hub Notify",
+        ["color"] = EMBED_COLOR,
+        ["fields"] = {
+            {["name"]="Type :",["value"]=string.format("```%s [Spawn]```",eventType),["inline"]=false},
+            {["name"]="Players In Server :",["value"]=string.format("```%s```",getPlayersCount()),["inline"]=false},
+            {["name"]="Sea :",["value"]=string.format("```%s```",DEFAULT_SEA),["inline"]=false},
+            {["name"]="Job ID (Pc Copy):",["value"]=string.format("```%s```",jobId),["inline"]=false},
+            {["name"]="Join Script (Pc Copy):",["value"]=string.format("```lua\n%s\n```",joinScript),["inline"]=false},
+            {["name"]="Job ID (Mobile Copy):",["value"]=string.format("```%s```",jobId),["inline"]=false},
+            {["name"]="Join Script (Mobile Copy):",["value"]=string.format("```lua\n%s\n```",joinScript),["inline"]=false}
         },
-        footer={text="Made by vitorzz07 • Time : "..nowISO(),icon_url=SERVER_ICON}
+        ["footer"] = {["text"]="Made by vitorzz07 • Time : "..now}
     }
-    local payload={username="Server Notify",avatar_url=SERVER_ICON,embeds={embed}}
-    local body=HttpService:JSONEncode(payload)
+end
 
-    local ok,res
-    if syn and syn.request then
-        ok,res=pcall(function() return syn.request({Url=webhookUrl,Method="POST",Headers={["Content-Type"]="application/json"},Body=body}) end)
-    elseif http and http.request then
-        ok,res=pcall(function() return http.request({Url=webhookUrl,Method="POST",Headers={["Content-Type"]="application/json"},Body=body}) end)
-    elseif request then
-        ok,res=pcall(function() return request({Url=webhookUrl,Method="POST",Headers={["Content-Type"]="application/json"},Body=body}) end)
-    else
-        ok,res=pcall(function() return HttpService:RequestInternal({Url=webhookUrl,Method="POST",Body=body,Headers={["Content-Type"]="application/json"}}) end)
+-- Envia pro Webhook
+local function sendEmbed(eventType, webhookKey)
+    local webhookUrl = WEBHOOKS[webhookKey]
+    if not webhookUrl or webhookUrl == "" then return end
+
+    local payload = HttpService:JSONEncode({embeds={buildEmbed(eventType)}})
+    local req = (syn and syn.request) or (http and http.request) or request
+    if req then
+        req({
+            Url=webhookUrl,
+            Method="POST",
+            Headers={["Content-Type"]="application/json"},
+            Body=payload
+        })
     end
-    if not ok then warn("Falha ao enviar webhook:",res) end
 end
 
-local function sendOnce(key,title,webhookKey)
-    local tag=key.."::"..getJobId()
-    if sentCache[tag] then return end
-    sentCache[tag]=true
-    sendEmbed(title,key,WEBHOOKS[webhookKey])
+-- Anti-spam
+local function sendOnce(tag,eventName,webhookKey)
+    local key = tag.."::"..getJobId()
+    if sentCache[key] then return end
+    sentCache[key] = true
+    sendEmbed(eventName,webhookKey)
 end
 
--- ---------- EVENTOS INSTANTÂNEOS ----------
+-- Eventos -----------------------------------
 
 -- Frutas
 Workspace.DescendantAdded:Connect(function(inst)
     if inst:IsA("Tool") or inst:IsA("Model") or inst:IsA("Folder") then
-        local name=inst.Name:lower()
         for _,fname in ipairs(FRUITS_NAMES) do
-            if name:find(fname:lower(),1,true) then
-                sendOnce("Fruit_"..fname,"Fruta Detectada: "..fname,"Fruit")
+            if inst.Name:lower():find(fname:lower(),1,true) then
+                sendOnce("Fruit_"..fname,"Fruit: "..fname,"Fruit")
             end
         end
     end
 end)
 
 -- Ilhas
-local function checkIsland(inst)
-    local islands={["MirageIsland"]="MirageIsland",["Mirage Island"]="MirageIsland",
-                   ["KitsuneIsland"]="KitsuneIsland",["Kitsune Island"]="KitsuneIsland",
-                   ["PrehistoricIsland"]="PrehistoricIsland",["Prehistoric Island"]="PrehistoricIsland"}
-    for k,v in pairs(islands) do
-        if inst.Name==k then sendOnce(v,"Ilha Detectada: "..k,v) end
+Workspace.DescendantAdded:Connect(function(inst)
+    if inst.Name:find("Mirage") then
+        sendOnce("Mirage","Mirage Island","MirageIsland")
+    elseif inst.Name:find("Kitsune") then
+        sendOnce("Kitsune","Kitsune Island","KitsuneIsland")
+    elseif inst.Name:find("Prehistoric") then
+        sendOnce("Prehistoric","Prehistoric Island","PrehistoricIsland")
     end
-end
-Workspace.DescendantAdded:Connect(checkIsland)
+end)
 
 -- Rare Bosses
 Workspace.DescendantAdded:Connect(function(inst)
     for _,boss in ipairs(RARE_BOSSES) do
-        if inst.Name==boss then
-            sendOnce("RareBoss_"..boss,"Boss Raro Detectado: "..boss,"RareBoss")
+        if inst.Name == boss then
+            sendOnce("Boss_"..boss,"Boss: "..boss,"RareBoss")
         end
     end
 end)
@@ -127,34 +133,33 @@ end)
 -- Legend Swords
 Workspace.DescendantAdded:Connect(function(inst)
     for _,sword in ipairs(LEGEND_SWORDS) do
-        if inst.Name==sword then
-            sendOnce("LegendSword_"..sword,"Legend Sword Disponível: "..sword,"LegendSword")
+        if inst.Name == sword then
+            sendOnce("Sword_"..sword,"Sword: "..sword,"LegendSword")
         end
     end
 end)
 
 -- Legend Haki
 ReplicatedStorage.DescendantAdded:Connect(function(inst)
-    local names={"LegendHaki","HakiColor","Haki","LegendaryHaki"}
-    for _,n in ipairs(names) do
-        if inst.Name==n then
-            local val=tostring(inst.Value or ""):lower()
-            if val~="" then sendOnce("LegendHaki_"..val,"Legend Haki Disponível: "..inst.Value,"LegendHaki") end
+    if inst:IsA("StringValue") then
+        if inst.Name:lower():find("haki") and inst.Value ~= "" then
+            sendOnce("Haki_"..inst.Value,"Haki: "..inst.Value,"LegendHaki")
         end
     end
 end)
 
 -- Lua Cheia / Quase Cheia
 local function checkMoon()
-    if Lighting:FindFirstChild("MoonPhase") and Lighting.MoonPhase.Value then
-        local v=tostring(Lighting.MoonPhase.Value):lower()
-        if v:find("full") then sendOnce("FullMoon","Lua Cheia","FullMoon") end
-        if v:find("waxing") or v:find("waning") or v:find("gibbous") then
-            sendOnce("NearFullMoon","Lua Quase Cheia","NearFullMoon")
+    if Lighting:FindFirstChild("MoonPhase") then
+        local v = tostring(Lighting.MoonPhase.Value or ""):lower()
+        if v:find("full") then
+            sendOnce("Moon_Full","Full Moon","FullMoon")
+        elseif v:find("waxing") or v:find("waning") or v:find("gibbous") then
+            sendOnce("Moon_NearFull","Near Full Moon","NearFullMoon")
         end
     end
 end
 Lighting:GetPropertyChangedSignal("MoonPhase"):Connect(checkMoon)
 checkMoon()
 
-print("Notify Script Instantâneo iniciado! Eventos detectados em tempo real.")
+print("Xesteer Hub Notify iniciado com sucesso!")
