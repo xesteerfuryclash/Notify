@@ -1,14 +1,15 @@
--- Notify Script - Xesteer Hub
+-- Xesteer Hub Notify - Versão Instantânea e Confiável
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
 
--- Cor fixa (hex #4e0000 = decimal 5111808)
+-- Cor fixa
 local EMBED_COLOR = 5111808
 
--- Webhooks já configurados
+-- Webhooks
 local WEBHOOKS = {
     FullMoon = "https://discord.com/api/webhooks/1255213642795810957/oycEkJx4F68sgQtSpt-xFPG0JmA8V_g_NueY9eQdQ6LQ3N2vhK00Nln7x4W9H1z2e-Dn",
     NearFullMoon = "https://discord.com/api/webhooks/1255213790905589820/v7tO6pUBuvROi6eM5lRnkV5p_Yl3nObHXms1NGKjx-xSssg60hhTPzXFlf9w9m3NGp3G",
@@ -33,6 +34,7 @@ local RARE_BOSSES = {
     "Rip Indra","Dough King","Cake Prince","Tyrant of the Skies",
     "Darkbeard","Soul Reaper","Cursed Captain"
 }
+
 local SEA_BY_PLACEID = {
     [2753915549] = "First Sea",
     [4442272183] = "Second Sea",
@@ -55,7 +57,6 @@ local function buildEmbed(eventType)
     local jobId = getJobId()
     local joinScript = makeJoinScript(jobId)
     local now = os.date("!%d/%m/%Y - %H:%M:%S")
-
     return {
         ["title"] = eventType .. " - Xesteer Hub Notify",
         ["color"] = EMBED_COLOR,
@@ -72,83 +73,77 @@ local function buildEmbed(eventType)
     }
 end
 
--- Envia pro Webhook
+-- Envia embed
 local function sendEmbed(eventType, webhookKey)
     local webhookUrl = WEBHOOKS[webhookKey]
     if not webhookUrl or webhookUrl == "" then return end
-
     local payload = HttpService:JSONEncode({embeds={buildEmbed(eventType)}})
     local req = (syn and syn.request) or (http and http.request) or request
     if req then
         req({
-            Url=webhookUrl,
-            Method="POST",
-            Headers={["Content-Type"]="application/json"},
-            Body=payload
+            Url = webhookUrl,
+            Method = "POST",
+            Headers = {["Content-Type"]="application/json"},
+            Body = payload
         })
     end
 end
 
 -- Anti-spam
-local function sendOnce(tag,eventName,webhookKey)
+local function sendOnce(tag, eventName, webhookKey)
     local key = tag.."::"..getJobId()
     if sentCache[key] then return end
     sentCache[key] = true
-    sendEmbed(eventName,webhookKey)
+    sendEmbed(eventName, webhookKey)
 end
 
--- Eventos -----------------------------------
+-- Função para varrer e detectar eventos
+local function scanWorkspace()
+    for _, inst in ipairs(Workspace:GetDescendants()) do
+        -- Fruits
+        if inst:IsA("Tool") or inst:IsA("Model") or inst:IsA("Folder") then
+            for _, fname in ipairs(FRUITS_NAMES) do
+                if inst.Name:lower():find(fname:lower(),1,true) then
+                    sendOnce("Fruit_"..fname,"Fruit: "..fname,"Fruit")
+                end
+            end
+        end
 
--- Frutas (All Seas)
-Workspace.DescendantAdded:Connect(function(inst)
-    if inst:IsA("Tool") or inst:IsA("Model") or inst:IsA("Folder") then
-        for _,fname in ipairs(FRUITS_NAMES) do
-            if inst.Name:lower():find(fname:lower(),1,true) then
-                sendOnce("Fruit_"..fname,"Fruit: "..fname,"Fruit")
+        -- Ilhas
+        if inst.Name:find("Mirage") then
+            sendOnce("Mirage","Mirage Island","MirageIsland")
+        elseif inst.Name:find("Kitsune") then
+            sendOnce("Kitsune","Kitsune Island","KitsuneIsland")
+        elseif inst.Name:find("Prehistoric") then
+            sendOnce("Prehistoric","Prehistoric Island","PrehistoricIsland")
+        end
+
+        -- Rare Bosses
+        for _, boss in ipairs(RARE_BOSSES) do
+            if inst.Name == boss then
+                sendOnce("Boss_"..boss,"Boss: "..boss,"RareBoss")
+            end
+        end
+
+        -- Legend Swords
+        for _, sword in ipairs(LEGEND_SWORDS) do
+            if inst.Name == sword then
+                sendOnce("Sword_"..sword,"Sword: "..sword,"LegendSword")
             end
         end
     end
-end)
 
--- Ilhas (Sea 3)
-Workspace.DescendantAdded:Connect(function(inst)
-    if inst.Name:find("Mirage") then
-        sendOnce("Mirage","Mirage Island","MirageIsland")
-    elseif inst.Name:find("Kitsune") then
-        sendOnce("Kitsune","Kitsune Island","KitsuneIsland")
-    elseif inst.Name:find("Prehistoric") then
-        sendOnce("Prehistoric","Prehistoric Island","PrehistoricIsland")
-    end
-end)
-
--- Rare Bosses (All Seas)
-Workspace.DescendantAdded:Connect(function(inst)
-    for _,boss in ipairs(RARE_BOSSES) do
-        if inst.Name == boss then
-            sendOnce("Boss_"..boss,"Boss: "..boss,"RareBoss")
+    -- Legend Haki
+    for _, inst in ipairs(ReplicatedStorage:GetDescendants()) do
+        if inst:IsA("StringValue") then
+            if inst.Name:lower():find("haki") and inst.Value ~= "" then
+                sendOnce("Haki_"..inst.Value,"Haki: "..inst.Value,"LegendHaki")
+            end
         end
     end
-end)
+end
 
--- Legend Swords (Sea 2)
-Workspace.DescendantAdded:Connect(function(inst)
-    for _,sword in ipairs(LEGEND_SWORDS) do
-        if inst.Name == sword then
-            sendOnce("Sword_"..sword,"Sword: "..sword,"LegendSword")
-        end
-    end
-end)
-
--- Legend Haki (Sea 2 and 3)
-ReplicatedStorage.DescendantAdded:Connect(function(inst)
-    if inst:IsA("StringValue") then
-        if inst.Name:lower():find("haki") and inst.Value ~= "" then
-            sendOnce("Haki_"..inst.Value,"Haki: "..inst.Value,"LegendHaki")
-        end
-    end
-end)
-
--- Lua Cheia / Quase Cheia (Sea 3)
+-- Lua Cheia / Quase Cheia
 local function checkMoon()
     if Lighting:FindFirstChild("MoonPhase") then
         local v = tostring(Lighting.MoonPhase.Value or ""):lower()
@@ -162,4 +157,7 @@ end
 Lighting:GetPropertyChangedSignal("MoonPhase"):Connect(checkMoon)
 checkMoon()
 
-print("✅ Xesteer Hub Notify iniciado com sucesso!")
+-- Loop contínuo para scan instantâneo
+RunService.Heartbeat:Connect(scanWorkspace)
+
+print("✅ Xesteer Hub Notify (Instant) iniciado com sucesso!")
