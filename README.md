@@ -1,28 +1,44 @@
--- Xesteer Hub Notificador Instantâneo (0s)
+-- Notify Script - Xesteer Hub
 local HttpService = game:GetService("HttpService")
-local Lighting = game:GetService("Lighting")
-local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
+-- Cor fixa (hex #4e0000 = decimal 5111808)
 local EMBED_COLOR = 5111808
 
--- Webhooks
+-- Webhooks já configurados
 local WEBHOOKS = {
-    Fruits = "https://discord.com/api/webhooks/SEU_WEBHOOK_FRUTAS",
-    Bosses = "https://discord.com/api/webhooks/SEU_WEBHOOK_BOSSES",
-    LegendSwords = "https://discord.com/api/webhooks/SEU_WEBHOOK_SWORDS",
-    LegendHaki = "https://discord.com/api/webhooks/SEU_WEBHOOK_HAKI",
-    FullMoon = "https://discord.com/api/webhooks/SEU_WEBHOOK_FULLMOON",
-    NearFullMoon = "https://discord.com/api/webhooks/SEU_WEBHOOK_NEARFULLMOON",
-    Islands = "https://discord.com/api/webhooks/SEU_WEBHOOK_ISLANDS"
+    FullMoon = "https://discord.com/api/webhooks/1255213642795810957/oycEkJx4F68sgQtSpt-xFPG0JmA8V_g_NueY9eQdQ6LQ3N2vhK00Nln7x4W9H1z2e-Dn",
+    NearFullMoon = "https://discord.com/api/webhooks/1255213790905589820/v7tO6pUBuvROi6eM5lRnkV5p_Yl3nObHXms1NGKjx-xSssg60hhTPzXFlf9w9m3NGp3G",
+    MirageIsland = "https://discord.com/api/webhooks/1255213851578224700/oayOWv7guA6pQ8j8do0nqdmS5r9oIklANBlbkx94tiO8sGMi9F-6Z0ltdGVJCe1SL7Ko",
+    KitsuneIsland = "https://discord.com/api/webhooks/1255213903376498728/I46b1JJKNPHNGUu2MY17o2yJwEo9A_lw7cGZAT5yqMmwbdkbZRHQNgpToKeYrDgqLm14",
+    PrehistoricIsland = "https://discord.com/api/webhooks/1255213947688558652/dK6Cbo7onAuLEzM4VgNOoGjqk_KY52wQvOE6PPTay4U5P-KS7IZiFJziJw4AlCPhSEwf",
+    Fruit = "https://discord.com/api/webhooks/1255213991898105918/gCkbCnyVx_ZtpoIWtGkEmoYxvtR6xHiPZr1MR3JSfRexqq2OQ1bRQ0Kv11uuxpfRYc4X",
+    LegendHaki = "https://discord.com/api/webhooks/1255214041033936956/sHd1x-Rj22TbkMhtW4x3qqmb7bcQheZcY08m3aVY0o1N6RFLpNsZ_JN6FKnIkLgQ8ejQ",
+    LegendSword = "https://discord.com/api/webhooks/1255214088047290449/8rhlRGWmylNE4TQ-P5t0YAk8ufc-dxssldVVBgM5lf9gDUpZTJepD7M1XY9JrvxE-hFl",
+    RareBoss = "https://discord.com/api/webhooks/1255214138137593916/o9qfQzx5B_nyBv98ZTyB-Pze7KhA5oqZPHOj_L9jP3rvhTL0zHzkQTVsLs1VjFsX4o0m"
 }
 
--- Place IDs por Sea
-local SEAS = {
-    Sea1 = 7449420000,
-    Sea2 = 7449421000,
-    Sea3 = 7449423635
+-- Listas
+local FRUITS_NAMES = {
+    "Rocket","Spin","Chop","Spring","Bomb","Smoke","Spike","Flame","Eagle","Ice","Sand",
+    "Dark","Diamond","Light","Rubber","Barrier","Magma","Quake","Buddha","Love","Spider",
+    "Phoenix","Portal","Rumble","Pain","Blizzard","Gravity","Mammoth","Venom","Shadow",
+    "Control","Spirit","Dough","T-Rex","Leopard","Sound","Kitsune","Dragon","Lightning"
 }
+local LEGEND_SWORDS = {"Oroshi","Saishi","Shizu"}
+local RARE_BOSSES = {
+    "Rip Indra","Dough King","Cake Prince","Tyrant of the Skies",
+    "Darkbeard","Soul Reaper","Cursed Captain"
+}
+local SEA_BY_PLACEID = {
+    [2753915549] = "First Sea",
+    [4442272183] = "Second Sea",
+    [7449423635] = "Third Sea"
+}
+local DEFAULT_SEA = SEA_BY_PLACEID[game.PlaceId] or "Unknown"
 
 -- Cache anti-spam
 local sentCache = {}
@@ -34,17 +50,19 @@ local function makeJoinScript(jobId)
     return string.format('game:GetService("TeleportService"):TeleportToPlaceInstance(%d,"%s")', game.PlaceId, jobId)
 end
 
+-- Monta embed
 local function buildEmbed(eventType)
     local jobId = getJobId()
     local joinScript = makeJoinScript(jobId)
     local now = os.date("!%d/%m/%Y - %H:%M:%S")
 
     return {
-        ["title"] = eventType.." - Xesteer Hub Notify",
+        ["title"] = eventType .. " - Xesteer Hub Notify",
         ["color"] = EMBED_COLOR,
         ["fields"] = {
             {["name"]="Type :",["value"]=string.format("```%s [Spawn]```",eventType),["inline"]=false},
             {["name"]="Players In Server :",["value"]=string.format("```%s```",getPlayersCount()),["inline"]=false},
+            {["name"]="Sea :",["value"]=string.format("```%s```",DEFAULT_SEA),["inline"]=false},
             {["name"]="Job ID (Pc Copy):",["value"]=string.format("```%s```",jobId),["inline"]=false},
             {["name"]="Join Script (Pc Copy):",["value"]=string.format("```lua\n%s\n```",joinScript),["inline"]=false},
             {["name"]="Job ID (Mobile Copy):",["value"]=string.format("```%s```",jobId),["inline"]=false},
@@ -54,6 +72,7 @@ local function buildEmbed(eventType)
     }
 end
 
+-- Envia pro Webhook
 local function sendEmbed(eventType, webhookKey)
     local webhookUrl = WEBHOOKS[webhookKey]
     if not webhookUrl or webhookUrl == "" then return end
@@ -62,14 +81,15 @@ local function sendEmbed(eventType, webhookKey)
     local req = (syn and syn.request) or (http and http.request) or request
     if req then
         req({
-            Url = webhookUrl,
-            Method = "POST",
-            Headers = {["Content-Type"] = "application/json"},
-            Body = payload
+            Url=webhookUrl,
+            Method="POST",
+            Headers={["Content-Type"]="application/json"},
+            Body=payload
         })
     end
 end
 
+-- Anti-spam
 local function sendOnce(tag,eventName,webhookKey)
     local key = tag.."::"..getJobId()
     if sentCache[key] then return end
@@ -77,96 +97,69 @@ local function sendOnce(tag,eventName,webhookKey)
     sendEmbed(eventName,webhookKey)
 end
 
-local function notifyObject(obj, webhookKey)
-    local name = obj.Name or "Unknown"
-    sendOnce(name, name, webhookKey)
-end
+-- Eventos -----------------------------------
 
--- Scan de eventos já existentes
-local function scanAllEvents()
-    -- Fruits todos Seas
-    for _, fruit in pairs(Workspace:FindFirstChild("Fruits") or {}) do
-        notifyObject(fruit, "Fruits")
-    end
-
-    -- Rare Boss todos Seas
-    for _, boss in pairs(Workspace:FindFirstChild("Bosses") or {}) do
-        notifyObject(boss, "Bosses")
-    end
-
-    -- Legend Sword (Sea2)
-    if game.PlaceId == SEAS.Sea2 then
-        for _, sword in pairs(Workspace:FindFirstChild("LegendSwords") or {}) do
-            notifyObject(sword, "LegendSwords")
-        end
-    end
-
-    -- Legend Haki (Sea2 e Sea3)
-    if game.PlaceId == SEAS.Sea2 or game.PlaceId == SEAS.Sea3 then
-        for _, haki in pairs(Workspace:FindFirstChild("LegendHaki") or {}) do
-            notifyObject(haki, "LegendHaki")
-        end
-    end
-
-    -- Miragem / Kitsune / Prehistoric / Islands (Sea3)
-    if game.PlaceId == SEAS.Sea3 then
-        for _, island in pairs(Workspace:FindFirstChild("Islands") or {}) do
-            notifyObject(island, "Islands")
-        end
-        for _, boss in pairs(Workspace:FindFirstChild("Bosses") or {}) do
-            local n = boss.Name:lower()
-            if n:find("kitsune") or n:find("prehistoric") or n:find("miragem") then
-                notifyObject(boss,"Bosses")
+-- Frutas (All Seas)
+Workspace.DescendantAdded:Connect(function(inst)
+    if inst:IsA("Tool") or inst:IsA("Model") or inst:IsA("Folder") then
+        for _,fname in ipairs(FRUITS_NAMES) do
+            if inst.Name:lower():find(fname:lower(),1,true) then
+                sendOnce("Fruit_"..fname,"Fruit: "..fname,"Fruit")
             end
         end
     end
+end)
 
-    -- Full Moon / Near Full Moon (Sea3)
-    if game.PlaceId == SEAS.Sea3 then
-        if Lighting:FindFirstChild("MoonPhase") then
-            local v = tostring(Lighting.MoonPhase.Value or ""):lower()
-            if v:find("full") then
-                sendOnce("Moon_Full","Full Moon","FullMoon")
-            elseif v:find("waxing") or v:find("waning") or v:find("gibbous") then
-                sendOnce("Moon_NearFull","Near Full Moon","NearFullMoon")
-            end
+-- Ilhas (Sea 3)
+Workspace.DescendantAdded:Connect(function(inst)
+    if inst.Name:find("Mirage") then
+        sendOnce("Mirage","Mirage Island","MirageIsland")
+    elseif inst.Name:find("Kitsune") then
+        sendOnce("Kitsune","Kitsune Island","KitsuneIsland")
+    elseif inst.Name:find("Prehistoric") then
+        sendOnce("Prehistoric","Prehistoric Island","PrehistoricIsland")
+    end
+end)
+
+-- Rare Bosses (All Seas)
+Workspace.DescendantAdded:Connect(function(inst)
+    for _,boss in ipairs(RARE_BOSSES) do
+        if inst.Name == boss then
+            sendOnce("Boss_"..boss,"Boss: "..boss,"RareBoss")
+        end
+    end
+end)
+
+-- Legend Swords (Sea 2)
+Workspace.DescendantAdded:Connect(function(inst)
+    for _,sword in ipairs(LEGEND_SWORDS) do
+        if inst.Name == sword then
+            sendOnce("Sword_"..sword,"Sword: "..sword,"LegendSword")
+        end
+    end
+end)
+
+-- Legend Haki (Sea 2 and 3)
+ReplicatedStorage.DescendantAdded:Connect(function(inst)
+    if inst:IsA("StringValue") then
+        if inst.Name:lower():find("haki") and inst.Value ~= "" then
+            sendOnce("Haki_"..inst.Value,"Haki: "..inst.Value,"LegendHaki")
+        end
+    end
+end)
+
+-- Lua Cheia / Quase Cheia (Sea 3)
+local function checkMoon()
+    if Lighting:FindFirstChild("MoonPhase") then
+        local v = tostring(Lighting.MoonPhase.Value or ""):lower()
+        if v:find("full") then
+            sendOnce("Moon_Full","Full Moon","FullMoon")
+        elseif v:find("waxing") or v:find("waning") or v:find("gibbous") then
+            sendOnce("Moon_NearFull","Near Full Moon","NearFullMoon")
         end
     end
 end
+Lighting:GetPropertyChangedSignal("MoonPhase"):Connect(checkMoon)
+checkMoon()
 
--- Listener instantâneo para spawn futuro
-local function listenDescendants()
-    Workspace.DescendantAdded:Connect(function(obj)
-        local n = obj.Name:lower()
-        -- Fruits
-        if obj.Parent == Workspace:FindFirstChild("Fruits") then
-            notifyObject(obj, "Fruits")
-        end
-        -- Bosses
-        if obj.Parent == Workspace:FindFirstChild("Bosses") then
-            if n:find("kitsune") or n:find("prehistoric") or n:find("miragem") then
-                notifyObject(obj,"Bosses")
-            else
-                notifyObject(obj,"Bosses")
-            end
-        end
-        -- Legend Sword
-        if obj.Parent == Workspace:FindFirstChild("LegendSwords") and game.PlaceId == SEAS.Sea2 then
-            notifyObject(obj, "LegendSwords")
-        end
-        -- Legend Haki
-        if obj.Parent == Workspace:FindFirstChild("LegendHaki") and (game.PlaceId == SEAS.Sea2 or game.PlaceId == SEAS.Sea3) then
-            notifyObject(obj, "LegendHaki")
-        end
-        -- Islands
-        if obj.Parent == Workspace:FindFirstChild("Islands") and game.PlaceId == SEAS.Sea3 then
-            notifyObject(obj,"Islands")
-        end
-    end)
-end
-
--- Rodar scan inicial e listener instantâneo
-scanAllEvents()
-listenDescendants()
-
-print("Xesteer Hub Notify Instantâneo iniciado com sucesso! 🚀")
+print("✅ Xesteer Hub Notify iniciado com sucesso!")
