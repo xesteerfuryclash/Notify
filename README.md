@@ -1,4 +1,4 @@
--- Notify Script - Xesteer Hub
+-- Notify Script - Xesteer Hub v2
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
@@ -33,12 +33,6 @@ local RARE_BOSSES = {
     "Rip Indra","Dough King","Cake Prince","Tyrant of the Skies",
     "Darkbeard","Soul Reaper","Cursed Captain"
 }
-local SEA_BY_PLACEID = {
-    [2753915549] = "First Sea",
-    [4442272183] = "Second Sea",
-    [7449423635] = "Third Sea"
-}
-local DEFAULT_SEA = SEA_BY_PLACEID[game.PlaceId] or "Unknown"
 
 -- Cache anti-spam
 local sentCache = {}
@@ -50,7 +44,7 @@ local function makeJoinScript(jobId)
     return string.format('game:GetService("TeleportService"):TeleportToPlaceInstance(%d,"%s")', game.PlaceId, jobId)
 end
 
--- Monta embed igual ao da imagem
+-- Monta embed
 local function buildEmbed(eventType)
     local jobId = getJobId()
     local joinScript = makeJoinScript(jobId)
@@ -62,7 +56,6 @@ local function buildEmbed(eventType)
         ["fields"] = {
             {["name"]="Type :",["value"]=string.format("```%s [Spawn]```",eventType),["inline"]=false},
             {["name"]="Players In Server :",["value"]=string.format("```%s```",getPlayersCount()),["inline"]=false},
-            {["name"]="Sea :",["value"]=string.format("```%s```",DEFAULT_SEA),["inline"]=false},
             {["name"]="Job ID (Pc Copy):",["value"]=string.format("```%s```",jobId),["inline"]=false},
             {["name"]="Join Script (Pc Copy):",["value"]=string.format("```lua\n%s\n```",joinScript),["inline"]=false},
             {["name"]="Job ID (Mobile Copy):",["value"]=string.format("```%s```",jobId),["inline"]=false},
@@ -148,14 +141,16 @@ ReplicatedStorage.DescendantAdded:Connect(function(inst)
     end
 end)
 
--- Lua Cheia / Quase Cheia
+-- Lua Cheia / Quase Cheia (apenas Sea 3)
 local function checkMoon()
-    if Lighting:FindFirstChild("MoonPhase") then
-        local v = tostring(Lighting.MoonPhase.Value or ""):lower()
-        if v:find("full") then
-            sendOnce("Moon_Full","Full Moon","FullMoon")
-        elseif v:find("waxing") or v:find("waning") or v:find("gibbous") then
-            sendOnce("Moon_NearFull","Near Full Moon","NearFullMoon")
+    if game.PlaceId == 7449423635 then -- Sea 3
+        if Lighting:FindFirstChild("MoonPhase") then
+            local v = tostring(Lighting.MoonPhase.Value or ""):lower()
+            if v:find("full") then
+                sendOnce("Moon_Full","Full Moon","FullMoon")
+            elseif v:find("waxing") or v:find("waning") or v:find("gibbous") then
+                sendOnce("Moon_NearFull","Near Full Moon","NearFullMoon")
+            end
         end
     end
 end
